@@ -2,6 +2,8 @@
 module Main where
 import Text.Parsec
 import Data.Functor.Identity
+import Control.Applicative hiding (many)
+
 
 data Chunk = Var String  
          | UnescapedVar String
@@ -14,9 +16,9 @@ data Chunk = Var String
 
 -- Custom delimiters may not contain whitespace or the equals sign.
 
-data DelimiterState = DelimiterState (String, String) deriving Show
+type DelimiterState = (String, String)  -- left and right delimiters
 
-defDelimiters = DelimiterState ("{{", "}}")
+defDelimiters = ("{{", "}}")
 
 main = do
     s <- getContents
@@ -28,14 +30,23 @@ type Parser a = ParsecT String DelimiterState Identity a
 runParse :: String -> [Chunk]
 runParse input = 
     case (runParserT (many chunk) defDelimiters "" input) of
-          Identity (Left x) -> error $ "parser failed: " ++ show x
-          Identity (Right xs') -> xs'
+        Identity (Left x) -> error $ "parser failed: " ++ show x
+        Identity (Right xs') -> xs'
+
+delimiters :: Monad m => ParsecT s DelimiterState m DelimiterState
+delimiters = getState 
+
+inDelimiters p = do
+    (a,z) <- delimiters
+    between (string a) (string z) p
+
+varname = many1 $ oneOf "a-zA-Z_.[]0-9"
 
 chunk :: Parser Chunk
 chunk = choice [var]
 
 var :: Parser Chunk 
-var = undefined
+var = Var <$> inDelimiters varname
 
 
 
