@@ -73,10 +73,10 @@ section :: Parser Chunk
 section = do
     key <- inDelimiters (char '#' *> varname)
     xs :: [Chunk] <- manyTill chunk (closeTag key)
-    (return  $ Section key xs) <?> "section"
+    (return  $ Section key xs) <?> ("section " ++ key)
 
 closeTag :: String -> Parser String
-closeTag k = inDelimiters (char '/' *> string k)
+closeTag k = try (inDelimiters (char '/' *> string k)) 
 
 
 
