@@ -16,7 +16,7 @@ build-type:          Simple
 -- extra-source-files:  
 cabal-version:       >=1.10
 
-executable text-mustache
+executable mus
   main-is:             Main.hs
   -- other-modules:       
   -- other-extensions:    

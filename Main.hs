@@ -1,8 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module Main where
 import Text.Parsec
 import Data.Functor.Identity
-import Control.Applicative hiding (many)
+import Control.Applicative hiding (many, (<|>))
 
 
 data Chunk = Var String  
@@ -23,7 +23,7 @@ defDelimiters = ("{{", "}}")
 main = do
     s <- getContents
     let xs = runParse s
-    mapM_ print xs
+    print xs
 
 type Parser a = ParsecT String DelimiterState Identity a
 
@@ -36,17 +36,58 @@ runParse input =
 delimiters :: Monad m => ParsecT s DelimiterState m DelimiterState
 delimiters = getState 
 
-inDelimiters p = do
-    (a,z) <- delimiters
-    between (string a) (string z) p
+leftDelimiter :: Parser String
+leftDelimiter = do 
+    (x,_) <- delimiters 
+    string x <* spaces
 
-varname = many1 $ oneOf "a-zA-Z_.[]0-9"
+rightDelimiter = do
+    (_,x) <- delimiters 
+    spaces >> string x
+
+inDelimiters p = (between leftDelimiter rightDelimiter p) <?> "inDelimiters"
+
+varname :: Parser String
+varname = (many1 (alphaNum <|> oneOf ".[]0-9")) <?> "varname"
 
 chunk :: Parser Chunk
-chunk = choice [var]
+chunk = choice [
+      try unescapedVar
+    , try var
+    , section
+    , plain
+    ]
 
 var :: Parser Chunk 
-var = Var <$> inDelimiters varname
+var = (Var <$> inDelimiters varname) <?> "var"
+
+unescapedVar = 
+  (UnescapedVar 
+      <$> (between
+            (string "{{{" <* spaces)
+            (spaces *> string "}}}")
+            varname))
+  <?> "unescapedVar"
+
+section :: Parser Chunk
+section = do
+    key <- inDelimiters (char '#' *> varname)
+    xs :: [Chunk] <- manyTill chunk (closeTag key)
+    (return  $ Section key xs) <?> "section"
+
+closeTag :: String -> Parser String
+closeTag k = inDelimiters (char '/' *> string k)
+
+
+
+plain = do
+    -- thanks to http://stackoverflow.com/a/20735868/232417
+    notFollowedBy leftDelimiter
+    x <- anyChar
+    xs <- manyTill anyChar ((eof >> (string "")) <|> bumpOpen)
+    return $ Plain xs
+
+  where bumpOpen = (lookAhead $ try leftDelimiter) <?> "bumpOpen"
 
 
 
