@@ -23,4 +23,6 @@ executable text-mustache
   build-depends:       base >=4.7 && <4.8
                      , aeson
                      , text
+                     , parsec
+                     , transformers
   default-language:    Haskell2010
