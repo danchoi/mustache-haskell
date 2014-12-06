@@ -21,5 +21,6 @@ executable text-mustache
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.7 && <4.8
-  -- hs-source-dirs:      
+                     , aeson
+                     , text
   default-language:    Haskell2010
