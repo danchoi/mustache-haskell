@@ -3,7 +3,7 @@ module Main where
 import Text.Parsec
 import Data.Functor.Identity
 import Control.Applicative hiding (many, (<|>))
-
+import qualified Text.Show.Pretty as Pr
 
 data Chunk = Var String  
          | UnescapedVar String
@@ -23,7 +23,7 @@ defDelimiters = ("{{", "}}")
 main = do
     s <- getContents
     let xs = runParse s
-    print xs
+    putStrLn $ Pr.ppShow xs
 
 type Parser a = ParsecT String DelimiterState Identity a
 

@@ -25,4 +25,6 @@ executable mus
                      , text
                      , parsec
                      , transformers
+                     , pretty-show
+
   default-language:    Haskell2010
