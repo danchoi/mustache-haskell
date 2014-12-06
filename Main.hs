@@ -48,13 +48,15 @@ rightDelimiter = do
 inDelimiters p = (between leftDelimiter rightDelimiter p) <?> "inDelimiters"
 
 varname :: Parser String
-varname = (many1 (alphaNum <|> oneOf ".[]0-9")) <?> "varname"
+varname = (many1 (alphaNum <|> oneOf ".[]0-9_")) <?> "varname"
 
 chunk :: Parser Chunk
 chunk = choice [
       try unescapedVar
     , try var
-    , section
+    , try section
+    , try invertedSection
+    , try setDelimiter
     , plain
     ]
 
@@ -74,6 +76,24 @@ section = do
     key <- inDelimiters (char '#' *> varname)
     xs :: [Chunk] <- manyTill chunk (closeTag key)
     (return  $ Section key xs) <?> ("section " ++ key)
+
+invertedSection :: Parser Chunk
+invertedSection = do
+    key <- inDelimiters (char '^' *> varname)
+    xs :: [Chunk] <- manyTill chunk (closeTag key)
+    (return  $ InvertedSection key xs) <?> ("section " ++ key)
+
+setDelimiter :: Parser Chunk
+setDelimiter = do
+  (left, right) <- inDelimiters $ do
+      char '='
+      left <- many1 (noneOf "= ")
+      spaces
+      right <- many1 (noneOf "= ")
+      char '='
+      return (left, right)
+  setState (left, right)
+  return $ SetDelimiter left right
 
 closeTag :: String -> Parser String
 closeTag k = try (inDelimiters (char '/' *> string k)) 
