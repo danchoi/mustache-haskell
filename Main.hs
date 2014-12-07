@@ -4,15 +4,21 @@ import Text.Parsec
 import Data.Functor.Identity
 import Control.Applicative hiding (many, (<|>))
 import qualified Text.Show.Pretty as Pr
+import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Monoid
 
-data Chunk = Var String  
-         | UnescapedVar String
-         | Section String [Chunk]
-         | InvertedSection String [Chunk]
-         | Comment String
+data Chunk = Var KeyPath  
+         | UnescapedVar KeyPath
+         | Section KeyPath [Chunk]
+         | InvertedSection KeyPath [Chunk]
+         | Comment KeyPath
          | SetDelimiter String String -- a stateful operation
          | Plain String
          deriving (Show, Read, Eq)
+
+type KeyPath = [Key]
+data Key = Key Text | Index Int deriving (Eq, Show, Read)
 
 -- Custom delimiters may not contain whitespace or the equals sign.
 
@@ -61,27 +67,27 @@ chunk = choice [
     ]
 
 var :: Parser Chunk 
-var = (Var <$> inDelimiters varname) <?> "var"
+var = (Var <$> inDelimiters keyPath) <?> "var"
 
 unescapedVar = 
   (UnescapedVar 
       <$> (between
             (string "{{{" <* spaces)
             (spaces *> string "}}}")
-            varname))
+            keyPath))
   <?> "unescapedVar"
 
 section :: Parser Chunk
 section = do
-    key <- inDelimiters (char '#' *> varname)
+    key <- inDelimiters (char '#' *> keyPath)
     xs :: [Chunk] <- manyTill chunk (closeTag key)
-    (return  $ Section key xs) <?> ("section " ++ key)
+    (return  $ Section key xs) <?> ("section " ++ show key)
 
 invertedSection :: Parser Chunk
 invertedSection = do
-    key <- inDelimiters (char '^' *> varname)
+    key <- inDelimiters (char '^' *> keyPath)
     xs :: [Chunk] <- manyTill chunk (closeTag key)
-    (return  $ InvertedSection key xs) <?> ("section " ++ key)
+    (return  $ InvertedSection key xs) <?> ("section " ++ show key)
 
 setDelimiter :: Parser Chunk
 setDelimiter = do
@@ -95,8 +101,35 @@ setDelimiter = do
   setState (left, right)
   return $ SetDelimiter left right
 
-closeTag :: String -> Parser String
-closeTag k = try (inDelimiters (char '/' *> string k)) 
+closeTag :: KeyPath -> Parser String
+closeTag k = try (inDelimiters (char '/' *> string k')) 
+  where k' = keyPathToString k
+
+keyPath :: Parser KeyPath
+keyPath = do
+  raw <- varname
+  let res = parse (sepBy1 pKeyOrIndex (many1 $ oneOf ".[")) "" raw
+  return 
+    $ case res of 
+        Left err -> error $ "Can't parse keypath: " ++ raw
+        Right res' -> res'
+
+keyPathToString :: KeyPath -> String
+keyPathToString xs = go xs
+  where go ((Key x):[]) = T.unpack x 
+        go ((Key x):xs) = T.unpack x
+                  <> "."
+                  <> keyPathToString xs
+        go ((Index x):xs) = 
+              "[" <> (show x) 
+              <> (']':keyPathToString xs)
+        go [] = []
+
+pKeyOrIndex = pIndex <|> pKey
+
+pKey = Key . T.pack <$> (many1 (alphaNum <|> noneOf ".["))
+
+pIndex = Index . read <$> (many1 digit) <* char ']'
 
 
 
