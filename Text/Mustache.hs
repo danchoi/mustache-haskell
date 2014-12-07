@@ -29,47 +29,44 @@ data Key = Key Text | Index Int deriving (Eq, Show, Read)
 ------------------------------------------------------------------------ 
 -- | Evaluation functions
 
-evalToLineBuilder :: Text -> String -> [KeyPath] -> Value -> B.Builder 
-evalToLineBuilder arrayDelim delim ks v = 
-    mconcat $ intersperse (B.fromText . T.pack $ delim) $  map (flip (evalToBuilder arrayDelim) v) ks
+evalToLineBuilder :: [KeyPath] -> Value -> B.Builder 
+evalToLineBuilder ks v = 
+    mconcat $ map (flip evalToBuilder v) ks
 
 type ArrayDelimiter = Text
 
-evalToList :: Text -> [KeyPath] -> Value -> [Text]
-evalToList arrayDelim ks v = map (flip (evalToText arrayDelim) v) ks
+evalToBuilder :: KeyPath -> Value -> B.Builder
+evalToBuilder k v = valToBuilder $ evalKeyPath k v
 
-evalToBuilder :: ArrayDelimiter -> KeyPath -> Value -> B.Builder
-evalToBuilder d k v = valToBuilder $ evalKeyPath d k v
-
-evalToText :: ArrayDelimiter -> KeyPath -> Value -> Text
-evalToText d k v = valToText $ evalKeyPath d k v
+evalToText :: KeyPath -> Value -> Text
+evalToText k v = valToText $ evalKeyPath k v
 
 -- evaluates the a JS key path against a Value context to a leaf Value
-evalKeyPath :: ArrayDelimiter -> KeyPath -> Value -> Value
-evalKeyPath d [] x@(String _) = x
-evalKeyPath d [] x@Null = x
-evalKeyPath d [] x@(Number _) = x
-evalKeyPath d [] x@(Bool _) = x
-evalKeyPath d [] x@(Object _) = x
-evalKeyPath d [] x@(Array v) = 
+evalKeyPath :: KeyPath -> Value -> Value
+evalKeyPath [] x@(String _) = x
+evalKeyPath [] x@Null = x
+evalKeyPath [] x@(Number _) = x
+evalKeyPath [] x@(Bool _) = x
+evalKeyPath [] x@(Object _) = x
+evalKeyPath [] x@(Array v) = 
           let vs = V.toList v
-              xs = intersperse d $ map (evalToText d []) vs
+              xs = map (evalToText []) vs
           in String . mconcat $ xs
-evalKeyPath d (Key key:ks) (Object s) = 
+evalKeyPath (Key key:ks) (Object s) = 
     case (HM.lookup key s) of
-        Just x          -> evalKeyPath d ks x
+        Just x          -> evalKeyPath ks x
         Nothing -> Null
-evalKeyPath d (Index idx:ks) (Array v) = 
+evalKeyPath (Index idx:ks) (Array v) = 
       let e = (V.!?) v idx
       in case e of 
-        Just e' -> evalKeyPath d ks e'
+        Just e' -> evalKeyPath ks e'
         Nothing -> Null
 -- traverse array elements with additional keys
-evalKeyPath d ks@(Key key:_) (Array v) = 
+evalKeyPath ks@(Key key:_) (Array v) = 
       let vs = V.toList v
-      in String . mconcat . intersperse d $ map (evalToText d ks) vs
-evalKeyPath _ ((Index _):_) _ = Null
-evalKeyPath _ _ _ = Null
+      in String . mconcat $ map (evalToText ks) vs
+evalKeyPath ((Index _):_) _ = Null
+evalKeyPath _ _ = Null
 
 valToBuilder :: Value -> B.Builder
 valToBuilder (String x) = B.fromText x
