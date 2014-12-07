@@ -20,7 +20,7 @@ data Chunk = Var KeyPath
          | InvertedSection KeyPath [Chunk]
          | Comment KeyPath
          | SetDelimiter String String -- a stateful operation
-         | Plain String
+         | Plain Text
          deriving (Show, Read, Eq)
 
 type KeyPath = [Key]
@@ -29,11 +29,15 @@ data Key = Key Text | Index Int deriving (Eq, Show, Read)
 ------------------------------------------------------------------------ 
 -- | Evaluation functions
 
-evalToLineBuilder :: [KeyPath] -> Value -> B.Builder 
-evalToLineBuilder ks v = 
-    mconcat $ map (flip evalToBuilder v) ks
+chunkToBuilder :: Value -> Chunk -> B.Builder
+chunkToBuilder v (Var k) = evalToBuilder k v
+chunkToBuilder v (UnescapedVar k) = evalToBuilder k v  -- TODO?
+chunkToBuilder v (Comment _) = mempty
+chunkToBuilder v (SetDelimiter _ _) = mempty
+chunkToBuilder v (Plain x) = B.fromText x
+chunkToBuilder v (Section ks xs) = mempty
+chunkToBuilder v (InvertedSection ks xs) = mempty
 
-type ArrayDelimiter = Text
 
 evalToBuilder :: KeyPath -> Value -> B.Builder
 evalToBuilder k v = valToBuilder $ evalKeyPath k v

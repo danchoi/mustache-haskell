@@ -90,6 +90,19 @@ closeTag :: KeyPath -> Parser String
 closeTag k = try (inDelimiters (char '/' *> string k')) 
   where k' = keyPathToString k
 
+plain = do
+    -- thanks to http://stackoverflow.com/a/20735868/232417
+    notFollowedBy leftDelimiter
+    x <- anyChar
+    xs <- manyTill anyChar ((eof >> (string "")) <|> bumpOpen)
+    return . Plain . T.pack $ x:xs
+  where bumpOpen = (lookAhead $ try leftDelimiter) <?> "bumpOpen"
+
+
+------------------------------------------------------------------------
+
+
+
 keyPath :: Parser KeyPath
 keyPath = do
   raw <- varname
@@ -115,17 +128,4 @@ pKeyOrIndex = pIndex <|> pKey
 pKey = Key . T.pack <$> (many1 (alphaNum <|> noneOf ".["))
 
 pIndex = Index . read <$> (many1 digit) <* char ']'
-
-
-
-plain = do
-    -- thanks to http://stackoverflow.com/a/20735868/232417
-    notFollowedBy leftDelimiter
-    x <- anyChar
-    xs <- manyTill anyChar ((eof >> (string "")) <|> bumpOpen)
-    return $ Plain xs
-  where bumpOpen = (lookAhead $ try leftDelimiter) <?> "bumpOpen"
-
-
-
 
