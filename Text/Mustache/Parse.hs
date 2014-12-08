@@ -34,7 +34,7 @@ leftDelimiter = do
 
 rightDelimiter = do
     (_,x) <- delimiters 
-    spaces >> string x
+    spaces >> string x 
 
 inDelimiters p = (between leftDelimiter rightDelimiter p) <?> "inDelimiters"
 
@@ -64,13 +64,13 @@ unescapedVar =
 
 section :: Parser Chunk
 section = do
-    key <- inDelimiters (char '#' *> keyPath)
+    key <- inDelimiters ((char '#' >> spaces) *> keyPath)
     xs :: [Chunk] <- manyTill chunk (closeTag key)
     (return  $ Section key xs) <?> ("section " ++ show key)
 
 invertedSection :: Parser Chunk
 invertedSection = do
-    key <- inDelimiters (char '^' *> keyPath)
+    key <- inDelimiters ((char '^' >> spaces) *> keyPath)
     xs :: [Chunk] <- manyTill chunk (closeTag key)
     (return  $ InvertedSection key xs) <?> ("section " ++ show key)
 
@@ -101,12 +101,11 @@ plain = do
 
 ------------------------------------------------------------------------
 
-
-
 keyPath :: Parser KeyPath
 keyPath = do
   raw <- varname
   let res = parse (sepBy1 pKeyOrIndex (many1 $ oneOf ".[")) "" raw
+  spaces
   return 
     $ case res of 
         Left err -> error $ "Can't parse keypath: " ++ raw
