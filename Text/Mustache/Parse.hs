@@ -6,7 +6,7 @@ module Text.Mustache.Parse (
 import Text.Mustache.Types
 import Text.Parsec
 import Data.Functor.Identity
-import Control.Applicative hiding (many, (<|>))
+import Control.Applicative hiding (many, (<|>), optional)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Monoid
@@ -98,7 +98,7 @@ unescapedVar =
 -- {{#section}} is a section; optional separator may be designated as {{#section|,}}
 section :: Parser Chunk
 section = do
-    (key, sep) <- inDelimiters ((char '#' >> spaces) *> ((,) <$> keyPath <*> sep))
+    (key, sep) <- inDelimiters ((char '#' >> spaces) *> ((,) <$> (keyPath <* optional (char '?')) <*> sep))
     xs :: [Chunk] <- manyTill chunk (closeTag key)
     (return  $ Section key xs sep) <?> ("section " ++ show key)
 
