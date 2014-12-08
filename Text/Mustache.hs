@@ -29,6 +29,10 @@ data Key = Key Text | Index Int deriving (Eq, Show, Read)
 ------------------------------------------------------------------------ 
 -- | Evaluation functions
 
+runTemplate :: [Chunk] -> Value -> B.Builder
+runTemplate xs v = mconcat
+    $ map (chunkToBuilder v) xs
+
 chunkToBuilder :: Value -> Chunk -> B.Builder
 chunkToBuilder v (Var k) = evalToBuilder k v
 chunkToBuilder v (UnescapedVar k) = evalToBuilder k v  -- TODO?
@@ -37,7 +41,7 @@ chunkToBuilder v (SetDelimiter _ _) = mempty
 chunkToBuilder v (Plain x) = B.fromText x
 chunkToBuilder v (Section ks chunks) = 
     case evalKeyPath ks v of 
-      x@(Array v') -> 
+      Array v' -> 
           let evalItem :: Value -> B.Builder
               evalItem loopValue = mconcat $ map (chunkToBuilder $ mergeValues v loopValue) chunks
           in mconcat $ map evalItem $ V.toList v'
@@ -65,6 +69,7 @@ evalKeyPath [] x@Null = x
 evalKeyPath [] x@(Number _) = x
 evalKeyPath [] x@(Bool _) = x
 evalKeyPath [] x@(Object _) = x
+evalKeyPath (Key ".":[]) x = x
 evalKeyPath [] x@(Array v) = 
           let vs = V.toList v
               xs = map (evalToText []) vs

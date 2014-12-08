@@ -125,7 +125,11 @@ keyPathToString xs = go xs
 
 pKeyOrIndex = pIndex <|> pKey
 
-pKey = Key . T.pack <$> (many1 (alphaNum <|> noneOf ".["))
+pKey = Key . T.pack 
+    <$> (
+        ((:[]) <$> char '.')  -- immediate context key
+        <|> (many1 (alphaNum <|> noneOf ".[")) 
+        )
 
 pIndex = Index . read <$> (many1 digit) <* char ']'
 

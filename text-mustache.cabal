@@ -30,6 +30,7 @@ executable mus2
                      , unordered-containers
                      , vector
                      , scientific
+                     , bytestring
 
   default-language:    Haskell2010
 
@@ -43,6 +44,7 @@ executable mus
                      , parsec
                      , transformers
                      , pretty-show
+                     , bytestring
                      , aeson
                      , unordered-containers
                      , vector
