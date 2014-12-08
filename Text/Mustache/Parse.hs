@@ -2,9 +2,8 @@
 module Text.Mustache.Parse (
     runParse
   , readTemplate
-  , module Text.Mustache
 ) where
-import Text.Mustache
+import Text.Mustache.Types
 import Text.Parsec
 import Data.Functor.Identity
 import Control.Applicative hiding (many, (<|>))

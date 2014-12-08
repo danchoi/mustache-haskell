@@ -1,6 +1,10 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module Text.Mustache
-where
+module Text.Mustache (
+  runTemplate
+, module Text.Mustache.Parse
+) where
+import Text.Mustache.Types
+import Text.Mustache.Parse
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy.IO as TL
@@ -13,20 +17,6 @@ import Data.Aeson
 import qualified Data.HashMap.Lazy as HM
 import qualified Data.Vector as V
 import Data.Scientific 
-
-data Chunk = Var KeyPath  
-         | UnescapedVar KeyPath
-         | Section KeyPath [Chunk] (Maybe Text)  -- separator text
-         | InvertedSection KeyPath [Chunk]
-         | Comment KeyPath
-         | SetDelimiter String String -- a stateful operation
-         | Plain Text
-         | Partial FilePath
-         deriving (Show, Read, Eq)
-
-type KeyPath = [Key]
-data Key = Key Text | Index Int deriving (Eq, Show, Read)
-
 
 ------------------------------------------------------------------------ 
 -- | Evaluation functions

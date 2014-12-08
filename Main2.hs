@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module Main where
-import Text.Mustache.Parse
+import Text.Mustache
 import qualified Text.Show.Pretty as Pr
 import System.Environment
 import Data.Aeson
