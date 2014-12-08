@@ -11,7 +11,7 @@ specification](http://mustache.github.io/mustache.5.html).
 You need the Haskell platform on your system.
 
 ```
-cabal install mustache
+cabal install mustache-haskell
 ```
 
 Or alternatively
