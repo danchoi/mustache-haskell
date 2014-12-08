@@ -49,8 +49,8 @@ chunkToBuilder v (Section ks chunks) =
       _ -> mempty
 chunkToBuilder v (InvertedSection ks chunks) = 
     case evalKeyPath ks v of
-      Null -> chunkToBuilder v (Section ks chunks)
-      Bool False -> chunkToBuilder v (Section ks chunks)
+      Null -> chunkToBuilder v (Section (init ks) chunks)
+      Bool False -> chunkToBuilder v (Section (init ks) chunks)
       _ -> mempty
 
 mergeValues :: Value -> Value -> Value
