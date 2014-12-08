@@ -2,10 +2,10 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                mustache-haskell 
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            Straight implementation of mustache templates
 description:         Straight implementation of mustache templates 
-homepage:            https://github.com/danchoi/mustache
+homepage:            https://github.com/danchoi/mustache-haskell
 license:             MIT
 license-file:        LICENSE
 author:              Daniel Choi
