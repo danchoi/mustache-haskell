@@ -73,5 +73,5 @@ when the input is
 
 ## Related
 
-* [wiskers](https://github.com/nejstastnejsistene/whiskers) Mustache templates with Template Haskell
+* [wiskers](https://github.com/nejstastnejsistene/whiskers) Mustache templates with Template Haskell ([reddit](http://www.reddit.com/r/haskell/comments/2kjgg2/whiskers_moustache_templates_with_template_haskell/))
 * [hastache](https://github.com/lymar/hastache) Haskell implementation of Mustache template
