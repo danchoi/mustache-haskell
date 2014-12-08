@@ -3,8 +3,8 @@
 
 name:                mustache-haskell 
 version:             0.1.0.0
-synopsis:            straight implementation of mustache templates
--- description:         
+synopsis:            Straight implementation of mustache templates
+description:         Straight implementation of mustache templates 
 homepage:            https://github.com/danchoi/mustache
 license:             MIT
 license-file:        LICENSE
