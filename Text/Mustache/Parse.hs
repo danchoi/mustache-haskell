@@ -29,12 +29,17 @@ loadPartials xs = mapM loadPartial xs >>= return . concat
 
 loadPartial :: Chunk -> IO [Chunk]
 loadPartial (Partial path) = do
-      e <- doesFileExist path
-      if e 
-      then do
-        s <- readFile path
-        return $ runParse s 
-      else error $ "Partial file missing: " ++ path
+  file <- do e <- doesFileExist path
+             if e 
+             then return path
+             else do
+               let path' = path ++ ".mustache"
+               e' <- doesFileExist path'
+               if e'
+               then return path'
+               else error $ "Partial file missing: " ++ path
+  s <- readFile file
+  return $ runParse s 
 loadPartial (Section k cs sep) = do
       cs' <- mapM loadPartial cs
       return [Section k (concat cs') sep]
