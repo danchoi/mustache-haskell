@@ -4,6 +4,7 @@ A Haskell implementation of mustache templates.
 
 Should be compatible with the the [mustache
 specification](http://mustache.github.io/mustache.5.html).
+Except lambdas are not supported.
 
 
 ## Install
