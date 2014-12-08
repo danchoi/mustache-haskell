@@ -88,6 +88,6 @@ mustache - template.mustache < input.json
 
 ## Related
 
-* [wiskers](https://github.com/nejstastnejsistene/whiskers) Mustache templates with Template Haskell ([reddit](http://www.reddit.com/r/haskell/comments/2kjgg2/whiskers_moustache_templates_with_template_haskell/))
+* [whiskers](https://github.com/nejstastnejsistene/whiskers) Mustache templates with Template Haskell ([reddit](http://www.reddit.com/r/haskell/comments/2kjgg2/whiskers_moustache_templates_with_template_haskell/))
 * [hastache](https://github.com/lymar/hastache) Haskell implementation of Mustache template
 * [mustache2hs](http://hackage.haskell.org/package/mustache2hs) takes in Haskell records (single data constructor only) and a list of mustache template and record name pairs, and generates Haskell code for functions that take an escape function and one of the records
