@@ -35,9 +35,22 @@ chunkToBuilder v (UnescapedVar k) = evalToBuilder k v  -- TODO?
 chunkToBuilder v (Comment _) = mempty
 chunkToBuilder v (SetDelimiter _ _) = mempty
 chunkToBuilder v (Plain x) = B.fromText x
-chunkToBuilder v (Section ks xs) = mempty
-chunkToBuilder v (InvertedSection ks xs) = mempty
-
+chunkToBuilder v (Section ks chunks) = 
+    case evalKeyPath ks v of 
+      x@(Array v') -> 
+          let evalItem :: Value -> B.Builder
+              evalItem loopValue = mconcat $ map (chunkToBuilder $ mergeValues v loopValue) chunks
+          in mconcat $ map evalItem $ V.toList v'
+      x@(Object v') -> mconcat $ map (chunkToBuilder $ mergeValues v x) chunks 
+      _ -> mempty -- all other cases are no op, especially null 
+chunkToBuilder v (InvertedSection ks chunks) = 
+    case evalKeyPath ks v of
+      Null -> chunkToBuilder v (Section ks chunks)
+      Bool False -> chunkToBuilder v (Section ks chunks)
+      _ -> mempty
+mergeValues :: Value -> Value -> Value
+mergeValues (Object outer) (Object inner) = Object $ HM.union inner outer
+mergeValues _ inner = inner
 
 evalToBuilder :: KeyPath -> Value -> B.Builder
 evalToBuilder k v = valToBuilder $ evalKeyPath k v
