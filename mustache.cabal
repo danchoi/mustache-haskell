@@ -5,7 +5,7 @@ name:                mustache
 version:             0.1.0.0
 synopsis:            straight implementation of mustache templates
 -- description:         
-homepage:            https://github.com/danchoi/text-mustache
+homepage:            https://github.com/danchoi/mustache
 license:             MIT
 license-file:        LICENSE
 author:              Daniel Choi
