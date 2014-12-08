@@ -1,6 +1,6 @@
 # mustache-haskell
 
-A Haskell implementation of mustache templates. Expects input data to be an Data.Aeson ToJSON instance.
+A Haskell implementation of mustache templates. Expects input data to be a Data.Aeson ToJSON instance.
 
 Should be compatible with the the [mustache
 specification](http://mustache.github.io/mustache.5.html).  Except lambdas are
