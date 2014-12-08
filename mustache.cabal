@@ -38,8 +38,8 @@ library
                      , bytestring
 
 
-executable mustachehs
-  main-is:             Main2.hs
+executable mus
+  main-is:             Main.hs
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.7 && <4.8
