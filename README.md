@@ -31,15 +31,16 @@ mus template.mustache < input.json
 ```
 
 ```
-mus v0.1.0.0
+mus v0.1.0.2
 
-Usage: mus [-c] FILE
+Usage: mus [-c] [-d TEMPLATE_DIRECTORY] TEMPLATE_FILE
   A Haskell implementation of Mustache templates. On STDIN provide the JSON to
   insert into the template.
 
 Available options:
   -h,--help                Show this help text
   -c                       Just output parse tree of template file
+  -d TEMPLATE_DIRECTORY    Template directory
 ```
 
 ## List separator syntax
