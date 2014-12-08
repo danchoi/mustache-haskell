@@ -42,7 +42,7 @@ separator with the following syntax:
 {{#hobbies, }}{{#name}}{{/hobbies}}
 ```
 
-This designates `", "` as the list separator will output
+This designates `", "` as the list separator and will output
 
 ```
 sewing, brewing, cooking
