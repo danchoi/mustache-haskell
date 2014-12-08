@@ -45,7 +45,7 @@ mus template.mustache < input.json
 ```
 
 ```
-mus v0.1.0.2
+mus 
 
 Usage: mus [-c] [-d TEMPLATE_DIRECTORY] TEMPLATE_FILE
   A Haskell implementation of Mustache templates. On STDIN provide the JSON to
