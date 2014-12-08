@@ -51,6 +51,6 @@ sewing, brewing, cooking
 when the input is 
 
 ```json
-{"hobbies":[{"name":"sewing"},{"name":"cooking"}]}
+{"hobbies":[{"name":"sewing"},{"name":"brewing"},{"name":"cooking"}]}
 ```
 
