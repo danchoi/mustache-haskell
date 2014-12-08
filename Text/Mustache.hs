@@ -45,13 +45,14 @@ chunkToBuilder v (Section ks chunks) =
           let evalItem :: Value -> B.Builder
               evalItem loopValue = mconcat $ map (chunkToBuilder $ mergeValues v loopValue) chunks
           in mconcat $ map evalItem $ V.toList v'
-      x@(Object v') -> mconcat $ map (chunkToBuilder $ mergeValues v x) chunks 
-      _ -> mempty -- all other cases are no op, especially null 
+      x@(Object _) -> mconcat $ map (chunkToBuilder $ mergeValues v x) chunks 
+      _ -> mempty
 chunkToBuilder v (InvertedSection ks chunks) = 
     case evalKeyPath ks v of
       Null -> chunkToBuilder v (Section ks chunks)
       Bool False -> chunkToBuilder v (Section ks chunks)
       _ -> mempty
+
 mergeValues :: Value -> Value -> Value
 mergeValues (Object outer) (Object inner) = Object $ HM.union inner outer
 mergeValues _ inner = inner
@@ -70,10 +71,7 @@ evalKeyPath [] x@(Number _) = x
 evalKeyPath [] x@(Bool _) = x
 evalKeyPath [] x@(Object _) = x
 evalKeyPath (Key ".":[]) x = x
-evalKeyPath [] x@(Array v) = 
-          let vs = V.toList v
-              xs = map (evalToText []) vs
-          in String . mconcat $ xs
+evalKeyPath [] x@(Array _) = x 
 evalKeyPath (Key key:ks) (Object s) = 
     case (HM.lookup key s) of
         Just x          -> evalKeyPath ks x
@@ -83,10 +81,6 @@ evalKeyPath (Index idx:ks) (Array v) =
       in case e of 
         Just e' -> evalKeyPath ks e'
         Nothing -> Null
--- traverse array elements with additional keys
-evalKeyPath ks@(Key key:_) (Array v) = 
-      let vs = V.toList v
-      in String . mconcat $ map (evalToText ks) vs
 evalKeyPath ((Index _):_) _ = Null
 evalKeyPath _ _ = Null
 
@@ -99,7 +93,7 @@ valToBuilder (Number x) =
     case floatingOrInteger x of
         Left float -> B.realFloat float
         Right int -> B.decimal int
-valToBuilder (Object _) = B.fromText "[Object]"
+valToBuilder (Object x) = B.fromText . T.pack . show $ x
 
 valToText :: Value -> Text
 valToText (String x) = x
