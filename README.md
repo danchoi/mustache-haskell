@@ -38,6 +38,7 @@ you are outputing elements of a list, you can designate an optional list
 separator with the following syntax:
 
 
+```
 {{#hobbies , }}{{#name}}{{/hobbies}}
 ```
 
