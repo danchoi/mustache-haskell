@@ -21,10 +21,12 @@ data Chunk = Var KeyPath
          | Comment KeyPath
          | SetDelimiter String String -- a stateful operation
          | Plain Text
+         | Partial FilePath
          deriving (Show, Read, Eq)
 
 type KeyPath = [Key]
 data Key = Key Text | Index Int deriving (Eq, Show, Read)
+
 
 ------------------------------------------------------------------------ 
 -- | Evaluation functions
@@ -52,6 +54,7 @@ chunkToBuilder v (InvertedSection ks chunks) =
       Null -> chunkToBuilder v (Section (init ks) chunks)
       Bool False -> chunkToBuilder v (Section (init ks) chunks)
       _ -> mempty
+chunkToBuilder v (Partial s) = B.fromText $ "{{ERROR: include partial " <> T.pack s <> "}}"
 
 mergeValues :: Value -> Value -> Value
 mergeValues (Object outer) (Object inner) = Object $ HM.union inner outer

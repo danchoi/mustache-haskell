@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 module Text.Mustache.Parse (
     runParse
+  , readTemplate
   , module Text.Mustache
 ) where
 import Text.Mustache
@@ -10,6 +11,7 @@ import Control.Applicative hiding (many, (<|>))
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Monoid
+import System.Directory 
 
 -- Custom delimiters may not contain whitespace or the equals sign.
 type DelimiterState = (String, String)  -- left and right delimiters
@@ -17,6 +19,31 @@ type DelimiterState = (String, String)  -- left and right delimiters
 defDelimiters = ("{{", "}}")
 
 type Parser a = ParsecT String DelimiterState Identity a
+
+readTemplate :: String -> IO [Chunk]
+readTemplate = loadPartials . runParse 
+
+-- | preload partials
+
+loadPartials :: [Chunk] -> IO [Chunk]
+loadPartials xs = mapM loadPartial xs >>= return . concat
+
+loadPartial :: Chunk -> IO [Chunk]
+loadPartial (Partial path) = do
+      e <- doesFileExist path
+      if e 
+      then do
+        s <- readFile path
+        return $ runParse s 
+      else error $ "Partial file missing: " ++ path
+loadPartial (Section k cs) = do
+      cs' <- mapM loadPartial cs
+      return [Section k (concat cs')]
+loadPartial (InvertedSection k cs) = do
+      cs' <- mapM loadPartial cs
+      return [InvertedSection k (concat cs')]
+loadPartial x = return [x]
+
 
 runParse :: String -> [Chunk]
 runParse input = 
@@ -48,6 +75,7 @@ chunk = choice [
     , try section
     , try invertedSection
     , try setDelimiter
+    , try partial
     , plain
     ]
 
@@ -89,6 +117,12 @@ setDelimiter = do
 closeTag :: KeyPath -> Parser String
 closeTag k = try (inDelimiters (char '/' *> string k')) 
   where k' = keyPathToString k
+
+partial = do
+  Partial <$> (inDelimiters ((char '>' >> spaces) *> filename))
+
+filename :: Parser String
+filename = (many1 (alphaNum <|> oneOf "/.[]0-9_")) <?> "filename"
 
 plain = do
     -- thanks to http://stackoverflow.com/a/20735868/232417

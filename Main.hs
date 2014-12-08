@@ -5,6 +5,6 @@ import qualified Text.Show.Pretty as Pr
 
 main = do
     s <- getContents
-    let xs = runParse s
+    xs <- readTemplate s
     putStrLn $ Pr.ppShow xs
 
