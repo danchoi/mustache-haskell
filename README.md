@@ -3,8 +3,17 @@
 A Haskell implementation of mustache templates.
 
 Should be compatible with the the [mustache
-specification](http://mustache.github.io/mustache.5.html).
-Except lambdas are not supported.
+specification](http://mustache.github.io/mustache.5.html).  Except lambdas are
+not supported.
+
+Supported syntax:
+
+* basic variables
+* sections
+* inverted sections
+* comments (are suppressed)
+* partials
+* set delimiter
 
 This project currently only provides a command line interface.  Later version
 may provide a library API for templating ToJSON instances.
