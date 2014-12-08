@@ -83,11 +83,11 @@ var = (Var <$> inDelimiters keyPath) <?> "var"
 
 unescapedVar = 
   (UnescapedVar 
-      <$> (between
-            (string "{{{" <* spaces)
-            (spaces *> string "}}}")
-            keyPath))
-  <?> "unescapedVar"
+    <$> (try tripleBraceForm <|> ampersandForm)) <?> "unescapedVar"
+  where tripleBraceForm = between (string "{{{" <* spaces)
+                                  (spaces *> string "}}}")
+                                  keyPath
+        ampersandForm = inDelimiters ((char '&' >> spaces) *> keyPath)
 
 -- {{#section}} is a section; optional separator may be designated as {{#section|,}}
 section :: Parser Chunk
