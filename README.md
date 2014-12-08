@@ -15,8 +15,9 @@ Supported syntax:
 * partials
 * set delimiter
 
-This project currently only provides a command line interface.  Later version
-may provide a library API for templating ToJSON instances.
+This project currently only provides a command line interface.
+Later versions will provide a library API for templating ToJSON
+instances.
 
 
 ## Install
