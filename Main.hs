@@ -23,7 +23,7 @@ opts = info
           (helper <*> parseOpts)
           (fullDesc 
             <> progDesc "A Haskell implementation of Mustache templates.\nOn STDIN provide the JSON to insert into the template."
-            <> header "mus v0.1.0.2")
+            <> header "mus v0.1.0.3")
 
 main = do
     opts' <- execParser opts 

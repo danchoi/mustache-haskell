@@ -6,10 +6,10 @@ data Chunk = Var KeyPath
          | UnescapedVar KeyPath
          | Section KeyPath [Chunk] (Maybe Text)  -- separator text
          | InvertedSection KeyPath [Chunk]
-         | Comment KeyPath
          | SetDelimiter String String -- a stateful operation
          | Plain Text
          | Partial FilePath
+         | Comment Text
          deriving (Show, Read, Eq)
 
 type KeyPath = [Key]

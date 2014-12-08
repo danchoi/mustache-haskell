@@ -80,6 +80,7 @@ chunk = choice [
     , try invertedSection
     , try setDelimiter
     , try partial
+    , try comment
     , plain
     ]
 
@@ -134,9 +135,18 @@ closeTag :: KeyPath -> Parser String
 closeTag k = try (inDelimiters (char '/' *> string k')) 
   where k' = keyPathToString k
 
-partial = do
+partial = 
   Partial <$> (inDelimiters ((char '>' >> spaces) *> filename))
 
+comment = do
+  Comment <$> (inDelimiters ((char '!' >> spaces) *> commentText))
+
+commentText  = do
+    notFollowedBy rightDelimiter
+    x <- anyChar
+    xs <- manyTill anyChar bumpClose
+    return . T.pack $ x:xs
+  
 filename :: Parser String
 filename = (many1 (alphaNum <|> oneOf "/.[]0-9_")) <?> "filename"
 
