@@ -30,6 +30,17 @@ cabal install
 mus template.mustache < input.json
 ```
 
+```
+mus v0.1.0.0
+
+Usage: mus [-c] FILE
+  A Haskell implementation of Mustache templates. On STDIN provide the JSON to
+  insert into the template.
+
+Available options:
+  -h,--help                Show this help text
+  -c                       Just output parse tree of template file
+```
 
 ## List separator syntax
 
