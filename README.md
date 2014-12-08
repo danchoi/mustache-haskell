@@ -71,6 +71,21 @@ when the input is
 ```
 
 
+## Performance
+
+In a few informal tests, 
+
+```
+mus template.mustache < input.json
+```
+
+is about 10x faster than the Ruby mustache gem command-line implementation,
+
+```
+mustache - template.mustache < input.json
+```
+
+
 ## Related
 
 * [wiskers](https://github.com/nejstastnejsistene/whiskers) Mustache templates with Template Haskell ([reddit](http://www.reddit.com/r/haskell/comments/2kjgg2/whiskers_moustache_templates_with_template_haskell/))
