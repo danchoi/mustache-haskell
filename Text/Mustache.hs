@@ -16,7 +16,7 @@ import Data.Scientific
 
 data Chunk = Var KeyPath  
          | UnescapedVar KeyPath
-         | Section KeyPath [Chunk]
+         | Section KeyPath [Chunk] (Maybe Text)  -- separator text
          | InvertedSection KeyPath [Chunk]
          | Comment KeyPath
          | SetDelimiter String String -- a stateful operation
@@ -41,18 +41,18 @@ chunkToBuilder v (UnescapedVar k) = evalToBuilder k v  -- TODO?
 chunkToBuilder v (Comment _) = mempty
 chunkToBuilder v (SetDelimiter _ _) = mempty
 chunkToBuilder v (Plain x) = B.fromText x
-chunkToBuilder v (Section ks chunks) = 
+chunkToBuilder v (Section ks chunks sep) = 
     case evalKeyPath ks v of 
       Array v' -> 
           let evalItem :: Value -> B.Builder
               evalItem loopValue = mconcat $ map (chunkToBuilder $ mergeValues v loopValue) chunks
-          in mconcat $ map evalItem $ V.toList v'
+          in mconcat $ intersperse (maybe mempty B.fromText sep) $ map evalItem $ V.toList v'
       x@(Object _) -> mconcat $ map (chunkToBuilder $ mergeValues v x) chunks 
       _ -> mempty
 chunkToBuilder v (InvertedSection ks chunks) = 
     case evalKeyPath ks v of
-      Null -> chunkToBuilder v (Section (init ks) chunks)
-      Bool False -> chunkToBuilder v (Section (init ks) chunks)
+      Null -> chunkToBuilder v (Section (init ks) chunks Nothing)
+      Bool False -> chunkToBuilder v (Section (init ks) chunks Nothing)
       _ -> mempty
 chunkToBuilder v (Partial s) = B.fromText $ "{{ERROR: include partial " <> T.pack s <> "}}"
 

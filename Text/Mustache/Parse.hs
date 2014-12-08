@@ -36,9 +36,9 @@ loadPartial (Partial path) = do
         s <- readFile path
         return $ runParse s 
       else error $ "Partial file missing: " ++ path
-loadPartial (Section k cs) = do
+loadPartial (Section k cs sep) = do
       cs' <- mapM loadPartial cs
-      return [Section k (concat cs')]
+      return [Section k (concat cs') sep]
 loadPartial (InvertedSection k cs) = do
       cs' <- mapM loadPartial cs
       return [InvertedSection k (concat cs')]
@@ -61,9 +61,9 @@ leftDelimiter = do
 
 rightDelimiter = do
     (_,x) <- delimiters 
-    spaces >> string x 
+    string x 
 
-inDelimiters p = (between leftDelimiter rightDelimiter p) <?> "inDelimiters"
+inDelimiters p = (between leftDelimiter (spaces >> rightDelimiter) p) <?> "inDelimiters"
 
 varname :: Parser String
 varname = (many1 (alphaNum <|> oneOf ".[]0-9_")) <?> "varname"
@@ -90,11 +90,23 @@ unescapedVar =
             keyPath))
   <?> "unescapedVar"
 
+-- {{#section}} is a section; optional separator may be designated as {{#section|,}}
 section :: Parser Chunk
 section = do
-    key <- inDelimiters ((char '#' >> spaces) *> keyPath)
+    (key, sep) <- inDelimiters ((char '#' >> spaces) *> ((,) <$> keyPath <*> sep))
     xs :: [Chunk] <- manyTill chunk (closeTag key)
-    (return  $ Section key xs) <?> ("section " ++ show key)
+    (return  $ Section key xs sep) <?> ("section " ++ show key)
+
+sep :: Parser (Maybe Text)
+sep  = do
+  spaces 
+  Just <$> do
+    spaces
+    notFollowedBy rightDelimiter
+    x <- anyChar
+    xs <- manyTill anyChar ((eof >> (string "")) <|> bumpClose)
+    return . T.pack $ x:xs
+  <|> pure Nothing
 
 invertedSection :: Parser Chunk
 invertedSection = do
@@ -130,7 +142,9 @@ plain = do
     x <- anyChar
     xs <- manyTill anyChar ((eof >> (string "")) <|> bumpOpen)
     return . Plain . T.pack $ x:xs
-  where bumpOpen = (lookAhead $ try leftDelimiter) <?> "bumpOpen"
+
+bumpOpen = (lookAhead $ try leftDelimiter) <?> "bumpOpen"
+bumpClose = (lookAhead $ try rightDelimiter) <?> "bumpClose"
 
 
 ------------------------------------------------------------------------
