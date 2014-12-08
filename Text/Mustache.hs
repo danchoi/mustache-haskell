@@ -26,8 +26,8 @@ runTemplate xs v = mconcat
     $ map (chunkToBuilder v) xs
 
 chunkToBuilder :: Value -> Chunk -> B.Builder
-chunkToBuilder v (Var k) = evalToBuilder k v
-chunkToBuilder v (UnescapedVar k) = evalToBuilder k v  -- TODO?
+chunkToBuilder v (Var k) = evalToBuilder True k v
+chunkToBuilder v (UnescapedVar k) = evalToBuilder False k v  
 chunkToBuilder v (Comment _) = mempty
 chunkToBuilder v (SetDelimiter _ _) = mempty
 chunkToBuilder v (Plain x) = B.fromText x
@@ -50,8 +50,8 @@ mergeValues :: Value -> Value -> Value
 mergeValues (Object outer) (Object inner) = Object $ HM.union inner outer
 mergeValues _ inner = inner
 
-evalToBuilder :: KeyPath -> Value -> B.Builder
-evalToBuilder k v = valToBuilder $ evalKeyPath k v
+evalToBuilder :: Bool -> KeyPath -> Value -> B.Builder
+evalToBuilder escape k v = valToBuilder escape $ evalKeyPath k v
 
 -- evaluates the a JS key path against a Value context to a leaf Value
 evalKeyPath :: KeyPath -> Value -> Value
@@ -74,15 +74,30 @@ evalKeyPath (Index idx:ks) (Array v) =
 evalKeyPath ((Index _):_) _ = Null
 evalKeyPath _ _ = Null
 
-valToBuilder :: Value -> B.Builder
-valToBuilder (String x) = B.fromText x
-valToBuilder Null = B.fromText "null"
-valToBuilder (Bool True) = B.fromText "true"
-valToBuilder (Bool False) = B.fromText "false"
-valToBuilder (Number x) = 
+valToBuilder :: Bool -> Value -> B.Builder
+valToBuilder True (String x) = B.fromText . htmlEscape $ x
+valToBuilder False (String x) = B.fromText x
+valToBuilder _ Null = B.fromText "null"
+valToBuilder _ (Bool True) = B.fromText "true"
+valToBuilder _ (Bool False) = B.fromText "false"
+valToBuilder _ (Number x) = 
     case floatingOrInteger x of
         Left float -> B.realFloat float
         Right int -> B.decimal int
-valToBuilder (Object x) = B.fromText . T.pack . show $ x
+valToBuilder _ (Object x) = B.fromText . T.pack . show $ x
 
+
+
+-- | Escape HTML symbols
+-- adapted from Hastache.hs -- thank you
+htmlEscape :: T.Text -> T.Text
+htmlEscape = T.concatMap proc
+  where
+    proc '&'  = "&amp;"
+    proc '\\' = "&#92;"
+    proc '"'  = "&quot;"
+    proc '\'' = "&#39;"
+    proc '<'  = "&lt;"
+    proc '>'  = "&gt;"
+    proc h    = T.singleton h
 
