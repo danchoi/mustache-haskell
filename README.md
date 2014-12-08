@@ -6,6 +6,9 @@ Should be compatible with the the [mustache
 specification](http://mustache.github.io/mustache.5.html).
 Except lambdas are not supported.
 
+This project currently only provides a command line interface.  Later version
+may provide a library API for templating ToJSON instances.
+
 
 ## Install
 
