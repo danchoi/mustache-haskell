@@ -65,7 +65,7 @@ separator with the following syntax:
 
 
 ```
-{{#hobbies, }}{{#name}}{{/hobbies}}
+{{#hobbies, }}{{name}}{{/hobbies}}
 ```
 
 This designates `", "` as the list separator and will output
