@@ -79,7 +79,7 @@ evalKeyPath _ _ = Null
 valToBuilder :: Bool -> Value -> B.Builder
 valToBuilder True (String x) = B.fromText . htmlEscape $ x
 valToBuilder False (String x) = B.fromText x
-valToBuilder _ Null = B.fromText "null"
+valToBuilder _ Null = mempty
 valToBuilder _ (Bool True) = B.fromText "true"
 valToBuilder _ (Bool False) = B.fromText "false"
 valToBuilder _ (Number x) = 
