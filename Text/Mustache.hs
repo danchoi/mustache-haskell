@@ -38,7 +38,9 @@ chunkToBuilder v (Section ks chunks sep) =
               evalItem loopValue = mconcat $ map (chunkToBuilder $ mergeValues v loopValue) chunks
           in mconcat $ intersperse (maybe mempty B.fromText sep) $ map evalItem $ V.toList v'
       x@(Object _) -> mconcat $ map (chunkToBuilder $ mergeValues v x) chunks 
-      _ -> mempty
+      Bool False -> mempty
+      Null -> mempty
+      _ -> mconcat $ map (chunkToBuilder v) chunks 
 chunkToBuilder v (InvertedSection ks chunks) = 
     case evalKeyPath ks v of
       Null -> chunkToBuilder v (Section (init ks) chunks Nothing)
